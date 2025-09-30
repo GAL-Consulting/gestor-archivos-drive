@@ -1,19 +1,32 @@
+
+    // 🔑 CONFIGURACIÓN
+    const CLIENT_ID = "935035577743-7ds3utl0nsbat33sbt2ervnckcgeceqr.apps.googleusercontent.com"; // "TU_CLIENT_ID.apps.googleusercontent.com";
+    const SHEET_ID = "1D8QeHDNR2bp8Ylfft-AyGTjyNbk_LLF8b6_LwvqBMqY"; //"TU_SHEET_ID";
+    const SCOPES = "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets";
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <title>Gestor Documental</title>
-
   <link rel="stylesheet" href="style.css">
 
-  <!-- Librería Google API -->
+  <!-- Google API y Google Identity Services -->
   <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <h1>Gestor Documental</h1>
 
-  <!-- Botón de login -->
-  <button id="login">Login con Google</button>
+  <!-- Botón de login con Google Identity Services -->
+  <div id="g_id_onload"
+       data-client_id="935035577743-7ds3utl0nsbat33sbt2ervnckcgeceqr.apps.googleusercontent.com" 
+       data-login_uri=""
+       data-auto_prompt="false"
+       data-callback="handleCredentialResponse">
+  </div>
+
+  <div class="g_id_signin" data-type="standard"></div>
 
   <!-- Selector de carpetas -->
   <h3>Carpetas disponibles en Drive</h3>
@@ -41,30 +54,28 @@
 
   <script>
     // 🔑 CONFIGURACIÓN
-    const CLIENT_ID = "935035577743-7ds3utl0nsbat33sbt2ervnckcgeceqr.apps.googleusercontent.com"; // "TU_CLIENT_ID.apps.googleusercontent.com";
-    const SHEET_ID = "1D8QeHDNR2bp8Ylfft-AyGTjyNbk_LLF8b6_LwvqBMqY"; //"TU_SHEET_ID";
+    const SHEET_ID =  "1D8QeHDNR2bp8Ylfft-AyGTjyNbk_LLF8b6_LwvqBMqY"; //"TU_SHEET_ID"; "TU_SHEET_ID";
     const SCOPES = "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets";
 
-    // Inicializar cliente Google API
-    function initClient() {
-      gapi.client.init({
-        clientId: CLIENT_ID,
-        discoveryDocs: [
-          "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
-          "https://sheets.googleapis.com/$discovery/rest?version=v4"
-        ],
-        scope: SCOPES
-      }).then(() => {
-        document.getElementById("login").onclick = handleAuthClick;
-      });
+    let token = null;
+
+    // Callback de login GIS
+    function handleCredentialResponse(response) {
+      token = response.credential; // JWT
+      initGapiClient();
     }
 
-    // Cargar librería
-    gapi.load("client:auth2", initClient);
-
-    // Login con Google
-    function handleAuthClick() {
-      gapi.auth2.getAuthInstance().signIn().then(() => {
+    // Inicializar gapi client con token
+    function initGapiClient() {
+      gapi.load("client", async () => {
+        await gapi.client.init({
+          apiKey: "", // opcional si solo usas OAuth
+          discoveryDocs: [
+            "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
+            "https://sheets.googleapis.com/$discovery/rest?version=v4"
+          ]
+        });
+        gapi.client.setToken({access_token: token});
         listarCarpetas();
       });
     }
@@ -86,14 +97,9 @@
           select.appendChild(opt);
         });
 
-        if (carpetas.length > 0) {
-          listarArchivos(carpetas[0].id);
-        }
+        if (carpetas.length > 0) listarArchivos(carpetas[0].id);
 
-        // Cuando se cambie de carpeta
-        select.onchange = () => {
-          listarArchivos(select.value);
-        };
+        select.onchange = () => listarArchivos(select.value);
       });
     }
 
@@ -154,7 +160,6 @@
         resource: { values: [valores] }
       }).then(() => {
         alert("Registro guardado en Sheets!");
-        // Limpiar formulario
         document.getElementById("archivoSeleccionado").value = "";
         document.getElementById("contraparte").value = "";
         document.getElementById("categoria").value = "";
@@ -164,4 +169,3 @@
   </script>
 </body>
 </html>
-
