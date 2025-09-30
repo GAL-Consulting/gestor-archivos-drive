@@ -5,11 +5,6 @@
 <title>Gestor Documental</title>
 <link rel="stylesheet" href="style.css">
 
-<script src="https://apis.google.com/js/api.js"></script>
-
-<script src="https://accounts.google.com/gsi/client" onload="gisLoaded()" async defer></script>
-
-
 <style>
   body { font-family: Arial, sans-serif; margin: 20px; }
   h1, h3 { color: #333; }
@@ -50,16 +45,26 @@
   <button id="guardar">Guardar Registro</button>
 </div>
 
+<!-- Librerías Google API -->
+<script src="https://apis.google.com/js/api.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 <script>
-  const CLIENT_ID = "935035577743-7ds3utl0nsbat33sbt2ervnckcgeceqr.apps.googleusercontent.com"; //"TU_CLIENT_ID.apps.googleusercontent.com"; // Pon tu Client ID
-  const SHEET_ID = "1D8QeHDNR2bp8Ylfft-AyGTjyNbk_LLF8b6_LwvqBMqY"; // "TU_SHEET_ID"; // Pon tu Sheet ID
+  // 🔑 CONFIGURACIÓN
+  const CLIENT_ID = "TU_CLIENT_ID.apps.googleusercontent.com"; // Poner tu Client ID
+  const SHEET_ID = "TU_SHEET_ID"; // Poner tu Sheet ID
+  const SCOPES = "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets";
 
   let tokenClient;
   let gapiInited = false;
   let gisInited = false;
 
-  // Inicializar gapi
-  function gapiLoaded() { gapi.load('client', initializeGapiClient); }
+  // -------------------
+  // Inicializar Google API Client
+  function gapiLoaded() {
+    gapi.load('client', initializeGapiClient);
+  }
+
   async function initializeGapiClient() {
     await gapi.client.init({
       discoveryDocs: [
@@ -71,12 +76,13 @@
     maybeEnableButtons();
   }
 
-  // Inicializar GIS
+  // -------------------
+  // Inicializar Google Identity Services
   function gisLoaded() {
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
-      scope: "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets",
-      callback: '', // se define al solicitar token
+      scope: SCOPES,
+      callback: '', // se definirá al solicitar token
     });
     gisInited = true;
     maybeEnableButtons();
@@ -88,23 +94,25 @@
     }
   }
 
-  // Login
+  // -------------------
+  // Login con Google
   document.getElementById("login").onclick = () => {
     tokenClient.callback = async (resp) => {
       if (resp.error) { console.error(resp); return; }
 
       gapi.client.setToken({ access_token: resp.access_token });
 
-      // Ocultar botón de login
+      // Ocultar botón de login y mostrar contenido
       document.getElementById("login").style.display = "none";
-      // Mostrar contenido
       document.getElementById("contenido").style.display = "block";
 
+      // Listar carpetas
       listarCarpetas();
     };
     tokenClient.requestAccessToken({ prompt: 'consent' });
   };
 
+  // -------------------
   // Listar carpetas
   function listarCarpetas() {
     gapi.client.drive.files.list({
@@ -125,7 +133,8 @@
     });
   }
 
-  // Listar PDFs
+  // -------------------
+  // Listar archivos PDF
   function listarArchivos(carpetaId) {
     gapi.client.drive.files.list({
       q: `'${carpetaId}' in parents and mimeType='application/pdf' and trashed=false`,
@@ -153,7 +162,8 @@
     });
   }
 
-  // Guardar en Sheets
+  // -------------------
+  // Guardar registro en Google Sheets
   document.getElementById("guardar").addEventListener("click", () => {
     const archivo = document.getElementById("archivoSeleccionado").value;
     const fileId = document.getElementById("archivoSeleccionado").dataset.fileId || "";
@@ -188,10 +198,13 @@
     });
   });
 
-  gapiLoaded();
-  // gisLoaded();
+  // -------------------
+  // Inicializar APIs al cargar ventana
+  window.onload = () => {
+    gapiLoaded();
+    gisLoaded();
+  };
 </script>
 
 </body>
 </html>
-
