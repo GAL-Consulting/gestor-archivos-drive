@@ -36,7 +36,7 @@
   <h3>Registrar documento en Google Sheets</h3>
   <label>Archivo seleccionado:</label>
   <input id="archivoSeleccionado" readonly>
-  <label>Contraparte:</label>
+  <label>Asunto:</label>
   <input id="contraparte">
   <label>Categoría:</label>
   <input id="categoria">
@@ -51,8 +51,10 @@
 
 <script>
   // 🔑 CONFIGURACIÓN
-  const CLIENT_ID = "TU_CLIENT_ID.apps.googleusercontent.com"; // Poner tu Client ID
-  const SHEET_ID = "TU_SHEET_ID"; // Poner tu Sheet ID
+  const CLIENT_ID = "935035577743-7ds3utl0nsbat33sbt2ervnckcgeceqr.apps.googleusercontent.com"; //"TU_CLIENT_ID.apps.googleusercontent.com"; // Pon tu Client ID
+  const SHEET_ID = "1D8QeHDNR2bp8Ylfft-AyGTjyNbk_LLF8b6_LwvqBMqY"; // "TU_SHEET_ID"; // Pon tu Sheet ID
+ // const CLIENT_ID = "TU_CLIENT_ID.apps.googleusercontent.com"; // Poner tu Client ID
+ // const SHEET_ID = "TU_SHEET_ID"; // Poner tu Sheet ID
   const SCOPES = "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets";
 
   let tokenClient;
