@@ -176,6 +176,7 @@
     const CLIENT_ID = "935035577743-7ds3utl0nsbat33sbt2ervnckcgeceqr.apps.googleusercontent.com"; //"TU_CLIENT_ID.apps.googleusercontent.com"; // Pon tu Client ID
     const SHEET_ID = "1D8QeHDNR2bp8Ylfft-AyGTjyNbk_LLF8b6_LwvqBMqY"; // "TU_SHEET_ID"; // Pon tu Sheet ID
     const FOLDER_ID = "1BwL4cPJzAQMdtHuO5eEQm4Vr47PcRli5";//"MI_FOLDER_ID"; // Poner mi Folder ID   
+    const ANTECEDENTES_ID = "1K-WgTeSJ4FlVmSlTqvS3ezVXulCkz8sX"; // "TU_ID_DE_ANTECEDENTES"; // Reemplazá con el ID real 
     const SCOPES = "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets";
 
   let tokenClient;
@@ -345,48 +346,144 @@
         }
       });
     }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Guardar registro en Google Sheets
-    document.getElementById("guardar").addEventListener("click", () => {
-      const archivo = document.getElementById("archivoSeleccionado").value;
-      const fileId = document.getElementById("archivoSeleccionado").dataset.fileId || "";
-      const asunto = document.getElementById("asunto").value;
-      const categoria = document.getElementById("categoria").value;
-      const comentarios = document.getElementById("comentarios").value;
+//    document.getElementById("guardar").addEventListener("click", () => {
+//      const archivo = document.getElementById("archivoSeleccionado").value;
+//      const fileId = document.getElementById("archivoSeleccionado").dataset.fileId || "";
+//      const asunto = document.getElementById("asunto").value;
+//      const categoria = document.getElementById("categoria").value;
+//      const comentarios = document.getElementById("comentarios").value;
 
-      if (!archivo) {
-        alert("Primero selecciona un archivo.");
-        return;
-      }
+//      if (!archivo) {
+//        alert("Primero selecciona un archivo.");
+//        return;
+//      }
 
-      const valores = [
-        new Date().toISOString(),
-        archivo,
-        fileId,
-        asunto,
-        categoria,
-        comentarios
-      ];
+//      const valores = [
+//        new Date().toISOString(),
+//        archivo,
+//        fileId,
+//        asunto,
+//        categoria,
+//        comentarios
+//      ];
 
-      gapi.client.sheets.spreadsheets.values.append({
-        spreadsheetId: SHEET_ID,
-        range: "A:F",
-        valueInputOption: "RAW",
-        insertDataOption: "INSERT_ROWS",
-        resource: { values: [valores] }
-      }).then(() => {
-        alert("Registro guardado en Sheets!");
-        document.getElementById("archivoSeleccionado").value = "";
-        document.getElementById("asunto").value = "";
-        document.getElementById("categoria").value = "";
-        document.getElementById("comentarios").value = "";
-        document.getElementById("visor").src = "";
-      });
-    });
+//      gapi.client.sheets.spreadsheets.values.append({
+//        spreadsheetId: SHEET_ID,
+//        range: "A:F",
+//        valueInputOption: "RAW",
+//        insertDataOption: "INSERT_ROWS",
+//        resource: { values: [valores] }
+//      }).then(() => {
+//        alert("Registro guardado en Sheets!");
+//        document.getElementById("archivoSeleccionado").value = "";
+//        document.getElementById("asunto").value = "";
+//        document.getElementById("categoria").value = "";
+//        document.getElementById("comentarios").value = "";
+//        document.getElementById("visor").src = "";
+//      });
+//    });
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    document.getElementById("guardar").addEventListener("click", async () => {
+  const archivo = document.getElementById("archivoSeleccionado").value;
+  const fileId = document.getElementById("archivoSeleccionado").dataset.fileId || "";
+  const contraparte = document.getElementById("contraparte").value;
+  const categoria = document.getElementById("categoria").value;
+  const comentarios = document.getElementById("comentarios").value;
+  const asunto = document.getElementById("asunto").value;
+
+  if (!archivo || !asunto) {
+    alert("Seleccioná un archivo y completá el asunto.");
+    return;
+  }
+
+  const valores = [
+    new Date().toISOString(),
+    archivo,
+    fileId,
+    contraparte,
+    categoria,
+    comentarios,
+    asunto
+  ];
+
+  // Guardar en Sheets
+  await gapi.client.sheets.spreadsheets.values.append({
+    spreadsheetId: SHEET_ID,
+    range: "A:G",
+    valueInputOption: "RAW",
+    insertDataOption: "INSERT_ROWS",
+    resource: { values: [valores] }
+  });
+
+  // Obtener o crear carpeta de asunto
+  const carpetaDestinoId = await obtenerOCrearCarpetaAsunto(asunto);
+
+  // Mover archivo
+  await moverArchivoA(fileId, carpetaDestinoId);
+
+  alert("Registro guardado y archivo movido a carpeta de asunto.");
+
+  // Limpiar formulario
+  document.getElementById("archivoSeleccionado").value = "";
+  document.getElementById("contraparte").value = "";
+  document.getElementById("categoria").value = "";
+  document.getElementById("comentarios").value = "";
+  document.getElementById("asunto").value = "";
+  document.getElementById("visor").src = "";
+});
+
+
+    
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    async function obtenerOCrearCarpetaAsunto(nombreAsunto) {
+  // Buscar carpeta con ese nombre dentro de Antecedentes
+  const res = await gapi.client.drive.files.list({
+    q: `'${ANTECEDENTES_ID}' in parents and mimeType='application/vnd.google-apps.folder' and name='${nombreAsunto}' and trashed=false`,
+    fields: "files(id, name)",
+    pageSize: 1
+  });
+
+  if (res.result.files && res.result.files.length > 0) {
+    return res.result.files[0].id; // Ya existe
+  }
+
+  // Crear nueva carpeta
+  const nuevaCarpeta = await gapi.client.drive.files.create({
+    resource: {
+      name: nombreAsunto,
+      mimeType: "application/vnd.google-apps.folder",
+      parents: [ANTECEDENTES_ID]
+    },
+    fields: "id"
+  });
+
+  return nuevaCarpeta.result.id;
+}
+/////////////////////////////////////////////////////////////////////////////////
+    async function moverArchivoA(fileId, destinoId) {
+  // Obtener padres actuales
+  const file = await gapi.client.drive.files.get({
+    fileId: fileId,
+    fields: "parents"
+  });
+
+  const padresActuales = file.result.parents;
+
+  // Mover archivo: quitar padres actuales y agregar nuevo
+  await gapi.client.drive.files.update({
+    fileId: fileId,
+    addParents: destinoId,
+    removeParents: padresActuales.join(","),
+    fields: "id, parents"
+  });
+}
+///////////////////////////////////////////////////////////////////////////////////////////
 
  // -------------------
   // Inicializar APIs al cargar ventana
