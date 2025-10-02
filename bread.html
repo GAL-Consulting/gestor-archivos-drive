@@ -155,8 +155,8 @@
       <label>Archivo seleccionado:</label>
       <input id="archivoSeleccionado" readonly><br>
 
-      <label>Contraparte:</label>
-      <input id="contraparte"><br>
+      <label>Asunto:</label>
+      <input id="asunto"><br>
 
       <label>Categoría:</label>
       <input id="categoria"><br>
@@ -285,8 +285,11 @@
     // Listar archivos de carpeta
     function listarArchivos(carpetaId) {
       gapi.client.drive.files.list({
-        q: `'${carpetaId}' in parents and mimeType='application/pdf' and trashed=false`,
-        fields: "files(id, name, webViewLink)",
+      //  q: `'${carpetaId}' in parents and mimeType='application/pdf' and trashed=false`,
+        q: `'${carpetaId}' in parents and trashed=false`,
+
+       // fields: "files(id, name, webViewLink)",
+        fields: "files(id, name, mimeType, webViewLink, webContentLink)",
         pageSize: 50
       }).then(response => {
         const files = response.result.files;
@@ -296,11 +299,42 @@
           files.forEach(f => {
             const li = document.createElement("li");
             li.textContent = f.name;
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
             li.onclick = () => {
               document.getElementById("archivoSeleccionado").value = f.name;
               document.getElementById("archivoSeleccionado").dataset.fileId = f.id;
               document.getElementById("visor").src = "https://drive.google.com/file/d/" + f.id + "/preview";
             };
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+            li.onclick = () => {
+  document.getElementById("archivoSeleccionado").value = f.name;
+  document.getElementById("archivoSeleccionado").dataset.fileId = f.id;
+
+  const visor = document.getElementById("visor");
+  const tipo = f.mimeType;
+
+  // Tipos compatibles con el visor
+  const tiposVisibles = [
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "image/gif"
+  ];
+
+  if (tiposVisibles.includes(tipo)) {
+    visor.src = `https://drive.google.com/file/d/${f.id}/preview`;
+  } else {
+    visor.srcdoc = `
+      <div style="text-align:center; padding:20px; font-family:sans-serif;">
+        <p><strong>No se puede visualizar este tipo de archivo aquí.</strong></p>
+        <p>Tipo: ${tipo}</p>
+        <a href="${f.webContentLink}" target="_blank" style="color:#2c3e50; font-weight:bold;">Descargar archivo</a>
+      </div>
+    `;
+  }
+};
+
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
             lista.appendChild(li);
           });
         } else {
@@ -313,7 +347,7 @@
     document.getElementById("guardar").addEventListener("click", () => {
       const archivo = document.getElementById("archivoSeleccionado").value;
       const fileId = document.getElementById("archivoSeleccionado").dataset.fileId || "";
-      const contraparte = document.getElementById("contraparte").value;
+      const asunto = document.getElementById("asunto").value;
       const categoria = document.getElementById("categoria").value;
       const comentarios = document.getElementById("comentarios").value;
 
@@ -326,7 +360,7 @@
         new Date().toISOString(),
         archivo,
         fileId,
-        contraparte,
+        asunto,
         categoria,
         comentarios
       ];
@@ -340,7 +374,7 @@
       }).then(() => {
         alert("Registro guardado en Sheets!");
         document.getElementById("archivoSeleccionado").value = "";
-        document.getElementById("contraparte").value = "";
+        document.getElementById("asunto").value = "";
         document.getElementById("categoria").value = "";
         document.getElementById("comentarios").value = "";
         document.getElementById("visor").src = "";
