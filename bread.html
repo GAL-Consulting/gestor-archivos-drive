@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Gestión de Archivos</title>
+  <title>Gestor Documental</title>
   <style>
     body {
       margin: 0;
@@ -12,130 +13,335 @@
       flex-direction: column;
     }
 
-    header {
-      background: #333;
-      color: #fff;
-      padding: 10px;
+    h1 {
       text-align: center;
+      margin: 0;
+      padding: 10px;
+      background: #2c3e50;
+      color: white;
     }
 
+    /* Layout principal en grid */
     main {
       flex: 1;
-      display: none; /* Oculto al inicio */
+      display: grid;
       grid-template-columns: 25% 50% 25%;
       grid-gap: 10px;
       padding: 10px;
       box-sizing: border-box;
-      height: calc(100vh - 60px);
+      height: calc(100vh - 60px); /* menos header */
     }
 
-    .column {
+    /* Columna izquierda */
+    .col-left {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #ccc;
+      overflow: hidden;
+    }
+
+    .carpetas, .archivos {
+      flex: 1;
+      overflow-y: auto;
+      border-top: 1px solid #ddd;
+      padding: 5px;
+    }
+
+    .carpetas {
+      border-bottom: 1px solid #999;
+    }
+
+    .carpetas ul, .archivos ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .carpetas li, .archivos li {
+      padding: 5px;
+      cursor: pointer;
+    }
+
+    .carpetas li:hover, .archivos li:hover {
+      background: #f0f0f0;
+    }
+
+    /* Columna central */
+    .col-center {
+      border: 1px solid #ccc;
+      overflow: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .col-center iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Columna derecha */
+    .col-right {
       border: 1px solid #ccc;
       padding: 10px;
-      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
 
-    footer {
-      background: #333;
-      color: #fff;
+    label {
+      font-weight: bold;
+    }
+
+    input, textarea, select, button {
+      width: 100%;
+      margin-bottom: 10px;
       padding: 5px;
-      text-align: center;
+      box-sizing: border-box;
     }
 
-    /* Breadcrumb */
-    #breadcrumb {
-      padding: 5px 10px;
-      background: #f5f5f5;
-      border-bottom: 1px solid #ccc;
-      font-size: 14px;
-    }
-
-    #breadcrumb span {
+    button {
+      background: #2c3e50;
+      color: white;
+      border: none;
       cursor: pointer;
-      color: blue;
-      text-decoration: underline;
     }
 
-    #breadcrumb span:hover {
-      color: darkblue;
+    button:hover {
+      background: #34495e;
+    }
+
+    /* Responsive: en pantallas pequeñas, se apila */
+    @media (max-width: 768px) {
+      main {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
+
+
 </head>
 <body>
-  <header>
-    <h1>Sistema de Gestión de Archivos</h1>
-    <button onclick="iniciar()">Iniciar</button>
-  </header>
+  <h1>Gestor Documental</h1>
 
-  <main id="app">
-    <div class="column">Columna izquierda</div>
+  <!-- Botón de login -->
+  <div style="text-align:center; margin:10px;">
+    <button id="login">Login con Google</button>
+  </div>
 
-    <div class="column">
-      <!-- Breadcrumb arriba de la lista -->
-      <div id="breadcrumb"></div>
-      <ul id="file-list"></ul>
+  <!-- Contenido principal (oculto hasta login) -->
+  <main id="app" style="display:none;">
+    <!-- Columna izquierda -->
+    <div class="col-left">
+      <div class="carpetas">
+        <h3>Carpetas</h3>
+        <ul id="listaCarpetas"></ul>
+      </div>
+      <div class="archivos">
+        <h3>Archivos</h3>
+        <div id="carpetaSeleccionada"></div>
+        <ul id="listaDocs"></ul>
+      </div>
     </div>
 
-    <div class="column">Columna derecha</div>
-  </main>
+    <!-- Columna central -->
+    <div class="col-center">
+      <iframe id="visor"></iframe>
+    </div>
 
-  <footer>
-    © 2025 Gestión de Archivos
-  </footer>
+    <!-- Columna derecha -->
+    <div class="col-right">
+      <h3>Registrar documento</h3>
+      <label>Archivo seleccionado:</label>
+      <input id="archivoSeleccionado" readonly><br>
+
+      <label>Contraparte:</label>
+      <input id="contraparte"><br>
+
+      <label>Categoría:</label>
+      <input id="categoria"><br>
+
+      <label>Comentarios:</label>
+      <textarea id="comentarios"></textarea><br>
+
+      <button id="guardar">Guardar Registro</button>
+    </div>
+  </main>
+  <!-- Librería Google API -->
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <script>
-    let currentPath = ["Raíz"];
+    // 🔑 CONFIGURACIÓN
+    const CLIENT_ID = "935035577743-7ds3utl0nsbat33sbt2ervnckcgeceqr.apps.googleusercontent.com"; //"TU_CLIENT_ID.apps.googleusercontent.com"; // Pon tu Client ID
+    const SHEET_ID = "1D8QeHDNR2bp8Ylfft-AyGTjyNbk_LLF8b6_LwvqBMqY"; // "TU_SHEET_ID"; // Pon tu Sheet ID
+    const FOLDER_ID = "1BwL4cPJzAQMdtHuO5eEQm4Vr47PcRli5";//"MI_FOLDER_ID"; // Poner mi Folder ID   
+    const SCOPES = "https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/spreadsheets";
 
-    function iniciar() {
-      document.getElementById("app").style.display = "";
-      renderBreadcrumb();
-      renderFiles(["Carpeta A", "Carpeta B", "Archivo1.pdf"]);
+  let tokenClient;
+  let gapiInited = false;
+  let gisInited = false;
+
+  // -------------------
+  // Inicializar Google API Client
+  function gapiLoaded() {
+    gapi.load('client', initializeGapiClient);
+  }
+
+  async function initializeGapiClient() {
+    await gapi.client.init({
+      discoveryDocs: [
+        "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
+        "https://sheets.googleapis.com/$discovery/rest?version=v4"
+      ]
+    });
+    gapiInited = true;
+    maybeEnableButtons();
+  }
+
+  // -------------------
+  // Inicializar Google Identity Services
+  function gisLoaded() {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: '', // se definirá al solicitar token
+    });
+    gisInited = true;
+    maybeEnableButtons();
+  }
+
+  function maybeEnableButtons() {
+    if (gapiInited && gisInited) {
+      document.getElementById("login").disabled = false;
     }
+  }
 
-    function renderBreadcrumb() {
-      const breadcrumbDiv = document.getElementById("breadcrumb");
-      breadcrumbDiv.innerHTML = "";
+  // -------------------
+  // Login con Google
+  document.getElementById("login").onclick = () => {
+    tokenClient.callback = async (resp) => {
+      if (resp.error) { console.error(resp); return; }
 
-      currentPath.forEach((folder, index) => {
-        const span = document.createElement("span");
-        span.textContent = folder;
+      gapi.client.setToken({ access_token: resp.access_token });
 
-        // Navegar a esa carpeta al hacer clic
-        span.onclick = () => {
-          currentPath = currentPath.slice(0, index + 1);
-          renderBreadcrumb();
-          renderFiles(["Carpeta X", "ArchivoY.txt"]); // ⚡ Simulación
-        };
+      // Ocultar botón de login y mostrar contenido
+      document.getElementById("login").style.display = "none";
+    //  document.getElementById("contenido").style.display = "block";
+       document.getElementById("app").style.display = "";
 
-        breadcrumbDiv.appendChild(span);
+      // Listar carpetas
+      listarCarpetas();
+    };
+    tokenClient.requestAccessToken({ prompt: 'consent' });
+  };
 
-        if (index < currentPath.length - 1) {
-          breadcrumbDiv.appendChild(document.createTextNode(" / "));
-        }
-      });
-    }
 
-    function renderFiles(files) {
-      const list = document.getElementById("file-list");
-      list.innerHTML = "";
-      files.forEach(file => {
-        const li = document.createElement("li");
-        li.textContent = file;
 
-        // Si es carpeta, simular que entramos
-        if (file.startsWith("Carpeta")) {
-          li.style.cursor = "pointer";
-          li.style.color = "green";
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Listar carpetas
+    function listarCarpetas() {
+      gapi.client.drive.files.list({
+        //q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
+        q: `'${FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+
+        fields: "files(id, name)",
+        pageSize: 50
+      }).then(response => {
+        const carpetas = response.result.files;
+        const lista = document.getElementById("listaCarpetas");
+        lista.innerHTML = "";
+        carpetas.forEach(c => {
+          const li = document.createElement("li");
+          li.textContent = c.name;
           li.onclick = () => {
-            currentPath.push(file);
-            renderBreadcrumb();
-            renderFiles(["Subcarpeta 1", "ArchivoZ.doc"]); // ⚡ Simulación
+            document.getElementById("carpetaSeleccionada").textContent = c.name;
+            listarArchivos(c.id);
           };
-        }
-
-        list.appendChild(li);
+          lista.appendChild(li);
+        });
       });
     }
+
+    // Listar archivos de carpeta
+    function listarArchivos(carpetaId) {
+      gapi.client.drive.files.list({
+        q: `'${carpetaId}' in parents and mimeType='application/pdf' and trashed=false`,
+        fields: "files(id, name, webViewLink)",
+        pageSize: 50
+      }).then(response => {
+        const files = response.result.files;
+        const lista = document.getElementById("listaDocs");
+        lista.innerHTML = "";
+        if (files && files.length > 0) {
+          files.forEach(f => {
+            const li = document.createElement("li");
+            li.textContent = f.name;
+            li.onclick = () => {
+              document.getElementById("archivoSeleccionado").value = f.name;
+              document.getElementById("archivoSeleccionado").dataset.fileId = f.id;
+              document.getElementById("visor").src = "https://drive.google.com/file/d/" + f.id + "/preview";
+            };
+            lista.appendChild(li);
+          });
+        } else {
+          lista.innerHTML = "<li>No hay archivos PDF.</li>";
+        }
+      });
+    }
+
+    // Guardar registro en Google Sheets
+    document.getElementById("guardar").addEventListener("click", () => {
+      const archivo = document.getElementById("archivoSeleccionado").value;
+      const fileId = document.getElementById("archivoSeleccionado").dataset.fileId || "";
+      const contraparte = document.getElementById("contraparte").value;
+      const categoria = document.getElementById("categoria").value;
+      const comentarios = document.getElementById("comentarios").value;
+
+      if (!archivo) {
+        alert("Primero selecciona un archivo.");
+        return;
+      }
+
+      const valores = [
+        new Date().toISOString(),
+        archivo,
+        fileId,
+        contraparte,
+        categoria,
+        comentarios
+      ];
+
+      gapi.client.sheets.spreadsheets.values.append({
+        spreadsheetId: SHEET_ID,
+        range: "A:F",
+        valueInputOption: "RAW",
+        insertDataOption: "INSERT_ROWS",
+        resource: { values: [valores] }
+      }).then(() => {
+        alert("Registro guardado en Sheets!");
+        document.getElementById("archivoSeleccionado").value = "";
+        document.getElementById("contraparte").value = "";
+        document.getElementById("categoria").value = "";
+        document.getElementById("comentarios").value = "";
+        document.getElementById("visor").src = "";
+      });
+    });
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ // -------------------
+  // Inicializar APIs al cargar ventana
+  window.onload = () => {
+    gapiLoaded();
+    gisLoaded();
+  };
   </script>
 </body>
 </html>
