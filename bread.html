@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Archivos</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #333;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+    }
+
+    main {
+      flex: 1;
+      display: none; /* Oculto al inicio */
+      grid-template-columns: 25% 50% 25%;
+      grid-gap: 10px;
+      padding: 10px;
+      box-sizing: border-box;
+      height: calc(100vh - 60px);
+    }
+
+    .column {
+      border: 1px solid #ccc;
+      padding: 10px;
+      overflow-y: auto;
+    }
+
+    footer {
+      background: #333;
+      color: #fff;
+      padding: 5px;
+      text-align: center;
+    }
+
+    /* Breadcrumb */
+    #breadcrumb {
+      padding: 5px 10px;
+      background: #f5f5f5;
+      border-bottom: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    #breadcrumb span {
+      cursor: pointer;
+      color: blue;
+      text-decoration: underline;
+    }
+
+    #breadcrumb span:hover {
+      color: darkblue;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sistema de Gestión de Archivos</h1>
+    <button onclick="iniciar()">Iniciar</button>
+  </header>
+
+  <main id="app">
+    <div class="column">Columna izquierda</div>
+
+    <div class="column">
+      <!-- Breadcrumb arriba de la lista -->
+      <div id="breadcrumb"></div>
+      <ul id="file-list"></ul>
+    </div>
+
+    <div class="column">Columna derecha</div>
+  </main>
+
+  <footer>
+    © 2025 Gestión de Archivos
+  </footer>
+
+  <script>
+    let currentPath = ["Raíz"];
+
+    function iniciar() {
+      document.getElementById("app").style.display = "";
+      renderBreadcrumb();
+      renderFiles(["Carpeta A", "Carpeta B", "Archivo1.pdf"]);
+    }
+
+    function renderBreadcrumb() {
+      const breadcrumbDiv = document.getElementById("breadcrumb");
+      breadcrumbDiv.innerHTML = "";
+
+      currentPath.forEach((folder, index) => {
+        const span = document.createElement("span");
+        span.textContent = folder;
+
+        // Navegar a esa carpeta al hacer clic
+        span.onclick = () => {
+          currentPath = currentPath.slice(0, index + 1);
+          renderBreadcrumb();
+          renderFiles(["Carpeta X", "ArchivoY.txt"]); // ⚡ Simulación
+        };
+
+        breadcrumbDiv.appendChild(span);
+
+        if (index < currentPath.length - 1) {
+          breadcrumbDiv.appendChild(document.createTextNode(" / "));
+        }
+      });
+    }
+
+    function renderFiles(files) {
+      const list = document.getElementById("file-list");
+      list.innerHTML = "";
+      files.forEach(file => {
+        const li = document.createElement("li");
+        li.textContent = file;
+
+        // Si es carpeta, simular que entramos
+        if (file.startsWith("Carpeta")) {
+          li.style.cursor = "pointer";
+          li.style.color = "green";
+          li.onclick = () => {
+            currentPath.push(file);
+            renderBreadcrumb();
+            renderFiles(["Subcarpeta 1", "ArchivoZ.doc"]); // ⚡ Simulación
+          };
+        }
+
+        list.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
