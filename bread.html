@@ -245,29 +245,42 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Listar carpetas
-    function listarCarpetas() {
-      gapi.client.drive.files.list({
-        //q: "mimeType='application/vnd.google-apps.folder' and trashed=false",
-        q: `'${FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+  function listarCarpetas(parentId = FOLDER_ID) {
+  gapi.client.drive.files.list({
+    q: `'${parentId}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    fields: "files(id, name)",
+    pageSize: 50
+  }).then(response => {
+    const carpetas = response.result.files;
+    const lista = document.getElementById("listaCarpetas");
+    lista.innerHTML = "";
 
-        fields: "files(id, name)",
-        pageSize: 50
-      }).then(response => {
-        const carpetas = response.result.files;
-        const lista = document.getElementById("listaCarpetas");
-        lista.innerHTML = "";
-        carpetas.forEach(c => {
-          const li = document.createElement("li");
-          li.textContent = c.name;
-          li.onclick = () => {
-            document.getElementById("carpetaSeleccionada").textContent = c.name;
-            listarArchivos(c.id);
-          };
-          lista.appendChild(li);
-        });
-      });
+    // Si no estamos en la raíz, mostrar opción para volver
+    if (parentId !== FOLDER_ID) {
+      const volver = document.createElement("li");
+      volver.textContent = "⬅️ Volver a raíz";
+      volver.style.fontWeight = "bold";
+      volver.onclick = () => {
+        document.getElementById("carpetaSeleccionada").textContent = "Raíz";
+        listarCarpetas(FOLDER_ID);
+        listarArchivos(FOLDER_ID);
+      };
+      lista.appendChild(volver);
     }
+
+    carpetas.forEach(c => {
+      const li = document.createElement("li");
+      li.textContent = c.name;
+      li.onclick = () => {
+        document.getElementById("carpetaSeleccionada").textContent = c.name;
+        listarCarpetas(c.id); // Navegar a subcarpetas
+        listarArchivos(c.id); // Mostrar archivos de esa carpeta
+      };
+      lista.appendChild(li);
+    });
+  });
+}
+
 
     // Listar archivos de carpeta
     function listarArchivos(carpetaId) {
