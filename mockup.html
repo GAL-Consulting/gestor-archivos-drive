@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Comparación Diseños</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; }
+    h2 { margin: 5px; text-align: center; background: #2c3e50; color: white; padding: 5px; }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .row {
+      display: flex;
+      flex: 1;
+      border-top: 3px solid #999;
+    }
+
+    /* Caja genérica */
+    .box {
+      border: 1px solid #ccc;
+      margin: 5px;
+      padding: 10px;
+      background: #f9f9f9;
+      overflow: auto;
+    }
+
+    /* ---- Diseño A (tu idea) ---- */
+    .layoutA {
+      display: grid;
+      grid-template-columns: 40% 60%;
+    }
+    .col-leftA {
+      display: grid;
+      grid-template-rows: 50% 50%;
+    }
+
+    /* ---- Diseño B (estándar) ---- */
+    .layoutB {
+      display: grid;
+      grid-template-columns: 30% 70%;
+    }
+    .col-rightB {
+      display: grid;
+      grid-template-rows: 40% 60%;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Diseño A (tu idea: lista arriba + detalle abajo + visor a la derecha)</h2>
+    <div class="row layoutA">
+      <div class="col-leftA">
+        <div class="box">🔍 Formulario de búsqueda + lista de resultados</div>
+        <div class="box">📋 Formulario de edición del registro (datos + botones)</div>
+      </div>
+      <div class="box">📑 Visor del archivo PDF</div>
+    </div>
+
+    <h2>Diseño B (estándar: lista izquierda + detalle/visor derecha)</h2>
+    <div class="row layoutB">
+      <div class="box">🔍 Lista de resultados (scroll vertical)</div>
+      <div class="col-rightB">
+        <div class="box">📋 Detalle / Formulario de edición</div>
+        <div class="box">📑 Visor del archivo PDF</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
