@@ -350,7 +350,7 @@
    document.getElementById("guardar").addEventListener("click", async () => {
   const archivo = document.getElementById("archivoSeleccionado").value;
   const fileId = document.getElementById("archivoSeleccionado").dataset.fileId || "";
-  const contraparte = document.getElementById("contraparte").value;
+  const asunto = document.getElementById("asunto").value;
   const categoria = document.getElementById("categoria").value;
   const comentarios = document.getElementById("comentarios").value;
   const asunto = document.getElementById("asunto").value;
@@ -364,7 +364,7 @@
     new Date().toISOString(),
     archivo,
     fileId,
-    contraparte,
+    asunto,
     categoria,
     comentarios,
     asunto
@@ -389,7 +389,7 @@
 
   // Limpiar formulario
   document.getElementById("archivoSeleccionado").value = "";
-  document.getElementById("contraparte").value = "";
+  document.getElementById("asunto").value = "";
   document.getElementById("categoria").value = "";
   document.getElementById("comentarios").value = "";
   document.getElementById("asunto").value = "";
