@@ -1,0 +1,103 @@
+<body>
+  <!-- Botón de login -->
+  <button id="login" disabled>Iniciar sesión con Google</button>
+
+  <!-- Contenedor principal oculto hasta login -->
+  <div id="app" style="display:none;">
+
+    <!-- Barra de navegación -->
+    <nav style="margin-bottom:15px;">
+      <button onclick="mostrarSeccion('registro')">📑 Registro</button>
+      <button onclick="mostrarSeccion('consultas')">🔍 Consultas</button>
+    </nav>
+
+    <!-- Sección Registro -->
+    <section id="registro" style="display:block;">
+      <h2>Registro de Documentos</h2>
+
+      <!-- Explorador de carpetas -->
+      <div style="display:flex; gap:20px;">
+        
+        <!-- Carpeta / Archivos -->
+        <div style="flex:1;">
+          <h3>Carpetas</h3>
+          <ul id="listaCarpetas"></ul>
+          <h3>Archivos</h3>
+          <ul id="listaDocs"></ul>
+        </div>
+
+        <!-- Visor -->
+        <div style="flex:2;">
+          <h3>Visor de archivo</h3>
+          <iframe id="visor" width="100%" height="400px" frameborder="0"></iframe>
+        </div>
+      </div>
+
+      <!-- Formulario de registro -->
+      <h3>Formulario de Registro</h3>
+      <form id="formRegistro" onsubmit="return false;" style="display:grid; grid-template-columns:1fr 1fr; gap:15px; max-width:800px;">
+        
+        <div style="grid-column: span 2;">
+          <label>Archivo Seleccionado:</label>
+          <input type="text" id="archivoSeleccionado" readonly style="width:100%;">
+        </div>
+
+        <div>
+          <label>Proyecto:</label>
+          <input type="text" id="proyecto" placeholder="Ej: Reforma Planta Sur">
+        </div>
+
+        <div>
+          <label>Categoría:</label>
+          <input type="text" id="categoria" placeholder="Ej: Contrato, Certificado">
+        </div>
+
+        <div>
+          <label>Emisor:</label>
+          <input type="text" id="emisor" placeholder="Ej: Proveedor SA">
+        </div>
+
+        <div>
+          <label>Receptor:</label>
+          <input type="text" id="receptor" placeholder="Ej: Cliente XYZ">
+        </div>
+
+        <div>
+          <label>Propiedad:</label>
+          <select id="propiedad">
+            <option value="Interno">Interno</option>
+            <option value="Enviado a tercero">Enviado a tercero</option>
+            <option value="Recibido de tercero">Recibido de tercero</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Fecha del Documento:</label>
+          <input type="date" id="fechaDocumento">
+        </div>
+
+        <div style="grid-column: span 2;">
+          <label>Comentarios:</label>
+          <textarea id="comentarios" rows="3" style="width:100%;"></textarea>
+        </div>
+
+        <div style="grid-column: span 2; text-align:right;">
+          <button type="button" id="guardar">💾 Guardar Registro</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Sección Consultas -->
+    <section id="consultas" style="display:none;">
+      <h2>Consultas</h2>
+      <p>(Próximamente armamos el buscador y la lógica de edición)</p>
+    </section>
+  </div>
+
+  <script>
+    function mostrarSeccion(seccion) {
+      document.getElementById("registro").style.display = (seccion === "registro") ? "block" : "none";
+      document.getElementById("consultas").style.display = (seccion === "consultas") ? "block" : "none";
+    }
+  </script>
+</body>
