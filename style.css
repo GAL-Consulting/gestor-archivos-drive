@@ -1,101 +1,85 @@
-/* style.css */
-
-/* Reset básico */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
   font-family: Arial, sans-serif;
-  background-color: #f7f7f7;
-  color: #333;
-  padding: 20px;
+  margin: 30px;
+  background: #f5f6fa;
 }
 
-/* Encabezados */
 h1 {
-  font-size: 2em;
-  margin-bottom: 15px;
-  color: #2c3e50;
+  text-align: center;
+  color: #333;
 }
 
-h3 {
-  font-size: 1.2em;
-  margin: 15px 0 10px;
-  color: #34495e;
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
-/* Inputs, selects y botones */
-input, select, button {
-  padding: 8px;
-  margin: 5px 0 15px 0;
-  width: 100%;
-  max-width: 400px;
-  font-size: 1em;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-button {
-  background-color: #3498db;
-  color: white;
+nav button {
+  padding: 10px 20px;
   border: none;
+  border-radius: 8px;
+  background: #007bff;
+  color: white;
   cursor: pointer;
-  transition: 0.3s;
+  transition: background 0.3s;
 }
 
-button:hover {
-  background-color: #2980b9;
+nav button.active {
+  background: #0056b3;
 }
 
-/* Lista de documentos */
-ul {
-  list-style: none;
-  padding-left: 0;
+nav button:hover {
+  background: #0069d9;
 }
 
-li {
-  margin-bottom: 8px;
-}
-
-li a {
-  text-decoration: none;
-  color: #3498db;
-  cursor: pointer;
-}
-
-li a:hover {
-  text-decoration: underline;
-}
-
-/* Formulario */
-form {
-  background-color: #ffffff;
-  padding: 15px;
+section {
+  display: none;
+  background: white;
+  padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  max-width: 450px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  max-width: 600px;
+  margin: auto;
 }
 
-/* Responsive */
-@media (max-width: 500px) {
-  body {
-    padding: 10px;
-  }
-
-  input, select, button {
-    width: 100%;
-    font-size: 1em;
-  }
-
-  h1 {
-    font-size: 1.5em;
-  }
-
-  h3 {
-    font-size: 1em;
-  }
+section.active {
+  display: block;
 }
 
+label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+select, input, textarea {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+button.save {
+  margin-top: 20px;
+  background: #28a745;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button.save:hover {
+  background: #218838;
+}
+
+#resultados {
+  margin-top: 20px;
+  background: #fafafa;
+  padding: 10px;
+  border-radius: 8px;
+}
