@@ -51,6 +51,8 @@ async function loadSelectOptions() {
 
   } catch (err) {
     console.error('Error cargando datos:', err);
+    console.log('Error detallado:', JSON.stringify(err, null, 2));
+
   }
 }
 
