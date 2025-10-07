@@ -1,7 +1,20 @@
 // === CONFIGURACIÓN ===
-const SHEET_ID = 'TU_SHEET_ID_AQUI';
-const API_KEY = 'TU_API_KEY_AQUI';
+const SHEET_ID = 1D8QeHDNR2bp8Ylfft-AyGTjyNbk_LLF8b6_LwvqBMqY"; //  'TU_SHEET_ID_AQUI';
+const API_KEY = "935035577743-7ds3utl0nsbat33sbt2ervnckcgeceqr.apps.googleusercontent.com"; // 'TU_API_KEY_AQUI';
 const RANGE = 'Documentos!A1:Z';
+
+// === CONFIGURACIÓN ===
+// const SHEET_ID = 'TU_SHEET_ID_AQUI';
+// const API_KEY = 'TU_API_KEY_AQUI';
+// const RANGE = 'Documentos!A1:Z';
+
+ const CLIENT_ID = "935035577743-7ds3utl0nsbat33sbt2ervnckcgeceqr.apps.googleusercontent.com"; //"TU_CLIENT_ID.apps.googleusercontent.com"; // Pon tu Client ID
+    const SHEET_ID = "1D8QeHDNR2bp8Ylfft-AyGTjyNbk_LLF8b6_LwvqBMqY"; // "TU_SHEET_ID"; // Pon tu Sheet ID
+    const FOLDER_ID = "1BwL4cPJzAQMdtHuO5eEQm4Vr47PcRli5";//"MI_FOLDER_ID"; // Poner mi Folder ID   
+    const PROYECTOS_ID = "1K-WgTeSJ4FlVmSlTqvS3ezVXulCkz8sX"; //"TU_ID_DE_ANTECEDENTES"; // Reemplazá con el ID real https://drive.google.com/drive/folders/1K-WgTeSJ4FlVmSlTqvS3ezVXulCkz8sX?usp=drive_link
+    const SCOPES = "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/spreadsheets";
+
+  let tokenClient;
 
 // === INICIALIZACIÓN ===
 function initClient() {
