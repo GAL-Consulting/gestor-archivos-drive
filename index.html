@@ -4,54 +4,58 @@
   <meta charset="UTF-8">
   <title>Gestión Documental</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://apis.google.com/js/api.js"></script>
-  <script src="https://accounts.google.com/gsi/client"></script>
 
+  <!-- APIs de Google -->
+  <script src="https://apis.google.com/js/api.js" onload="gapiLoaded()" async defer></script>
+  <script src="https://accounts.google.com/gsi/client" onload="gisLoaded()" async defer></script>
 </head>
+
 <body>
-  <button id="login" disabled>Iniciar sesión con Google</button>
-<div id="app" style="display:none;">
-  <!-- el resto de tu aplicación -->
+  <header>
+    <h1>Gestión Documental</h1>
+  </header>
 
-
-  <h1>Gestión Documental</h1>
-
-  <nav>
-    <button id="btnRegistro" class="active">📁 Registro</button>
-    <button id="btnConsultas">🔍 Consultas</button>
-  </nav>
-
-  <!-- SECCIÓN REGISTRO -->
-  <section id="registro" class="active">
-    <h2>Registrar Documento</h2>
-    <form id="formDoc">
-      <label>Proyecto</label>
-      <select id="proyecto"></select>
-
-      <label>Categoría</label>
-      <select id="categoria"></select>
-
-      <label>Emisor/Receptor</label>
-      <select id="emisor"></select>
-
-      <label>Propiedad</label>
-      <select id="propiedad"></select>
-
-      <label>Comentarios / Palabras clave</label>
-      <textarea id="comentarios" rows="3"></textarea>
-
-      <button type="button" class="save" id="guardarBtn">Guardar</button>
-    </form>
-  </section>
-
-  <!-- SECCIÓN CONSULTAS -->
-  <section id="consultas">
-    <h2>Consultas</h2>
-    <input type="text" id="busqueda" placeholder="Buscar por palabra clave...">
-    <div id="resultados"></div>
-  </section>
+  <!-- BOTÓN DE LOGIN -->
+  <div id="login-container" style="text-align:center; margin-top:50px;">
+    <button id="login" disabled class="btn">Iniciar sesión con Google</button>
   </div>
 
+  <!-- CONTENEDOR PRINCIPAL (se muestra tras login) -->
+  <div id="app" style="display:none;">
+    <nav>
+      <button id="btnRegistro" class="active">Registrar documento</button>
+      <button id="btnConsultas">Consultas</button>
+    </nav>
+
+    <!-- SECCIÓN REGISTRO -->
+    <section id="registro" class="active">
+      <h2>Registro de Documento</h2>
+
+      <form id="formRegistro">
+        <label for="proyecto">Proyecto:</label>
+        <select id="proyecto"></select>
+
+        <label for="categoria">Categoría:</label>
+        <select id="categoria"></select>
+
+        <label for="emisor">Emisor/Receptor:</label>
+        <select id="emisor"></select>
+
+        <label for="propiedad">Propiedad:</label>
+        <select id="propiedad"></select>
+
+        <button type="submit" class="btn">Guardar registro</button>
+      </form>
+    </section>
+
+    <!-- SECCIÓN CONSULTAS -->
+    <section id="consultas">
+      <h2>Consultas</h2>
+      <div id="listadoArchivos"></div>
+    </section>
+  </div>
+
+  <!-- ARCHIVO PRINCIPAL -->
   <script src="script.js"></script>
 </body>
 </html>
