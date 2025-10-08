@@ -264,4 +264,80 @@ document.getElementById("guardar").addEventListener("click", async () => {
         proyecto
     ];
 
+    // Guardar en Sheets
+    await gapi.client.sheets.spreadsheets.values.append({
+        spreadsheetId: SHEET_ID,
+        range: "A:G",
+        valueInputOption: "RAW",
+        insertDataOption: "INSERT_ROWS",
+        resource: { values: [valores] }
+    });
+
+    // Obtener o crear carpeta de proyecto
+    const carpetaDestinoId = await obtenerOCrearCarpetaAsunto(proyecto);
+
+    // Mover archivo
+    await moverArchivoA(fileId, carpetaDestinoId);
+
+    alert("Registro guardado y archivo movido a carpeta de proyecto.");
+
+    // Limpiar formulario
+    document.getElementById("archivoSeleccionado").value = "";
+    document.getElementById("proyecto").value = "";
+    document.getElementById("categoria").value = "";
+    document.getElementById("comentarios").value = "";
+    document.getElementById("visor").src = "";
+});
+
+// =======================
+// FUNCIONES AUXILIARES
+// =======================
+async function obtenerOCrearCarpetaAsunto(nombreAsunto) {
+    const res = await gapi.client.drive.files.list({
+        q: `'${ANTECEDENTES_ID}' in parents and mimeType='application/vnd.google-apps.folder' and name='${nombreAsunto}' and trashed=false`,
+        fields: "files(id, name)",
+        pageSize: 1
+    });
+
+    if (res.result.files && res.result.files.length > 0) {
+        return res.result.files[0].id;
+    }
+
+    const nuevaCarpeta = await gapi.client.drive.files.create({
+        resource: {
+            name: nombreAsunto,
+            mimeType: "application/vnd.google-apps.folder",
+            parents: [ANTECEDENTES_ID]
+        },
+        fields: "id"
+    });
+
+    return nuevaCarpeta.result.id;
+}
+
+async function moverArchivoA(fileId, destinoId) {
+    const file = await gapi.client.drive.files.get({
+        fileId: fileId,
+        fields: "parents"
+    });
+
+    const padresActuales = file.result.parents;
+
+    await gapi.client.drive.files.update({
+        fileId: fileId,
+        addParents: destinoId,
+        removeParents: padresActuales.join(","),
+        fields: "id, parents"
+    });
+}
+
+// =======================
+// INICIALIZACIÓN GLOBAL
+// =======================
+window.onload = () => {
+    gapiLoaded();
+    gisLoaded();
+};
+
+
    
